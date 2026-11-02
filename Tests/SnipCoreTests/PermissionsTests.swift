@@ -56,7 +56,11 @@ import ScreenCaptureKit
 }
 
 @Test func permissionLinksTargetDifferentSettingsPanes() {
-    #expect(CapturePermission.screen.settingsURL.query == "Privacy_ScreenCapture")
-    #expect(CapturePermission.microphone.settingsURL.query == "Privacy_Microphone")
+    // Older Foundation versions return nil from URL.query for this custom
+    // scheme. Verify the complete link passed to System Settings instead.
+    #expect(CapturePermission.screen.settingsURL.absoluteString ==
+        "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")
+    #expect(CapturePermission.microphone.settingsURL.absoluteString ==
+        "x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone")
     #expect(CapturePermission.screen.settingsURL != CapturePermission.microphone.settingsURL)
 }

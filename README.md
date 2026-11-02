@@ -4,21 +4,21 @@ A native macOS menu bar utility for screenshots, screen recording, and audio rec
 
 ## Build and run
 
-Install Xcode 16 or later and select it with `xcode-select`. Open `Snip.xcodeproj` and run the **Snip** scheme, or use:
+Install Xcode 16 or later and select it with `xcode-select`. Install the command runner with `brew install just`. Open `Snip.xcodeproj` and run the **Snip** scheme, or use:
 
 ```sh
-./scripts/build.sh Debug
+just build
 open build/DerivedData/Build/Products/Debug/Snip.app
 ```
 
 The app opens a menu bar panel. It has no Dock icon. Local builds use an ad hoc signature and the bundle identifier `local.snip.app`; no Apple Developer membership is needed to build locally. Use a stable location and signing identity when testing privacy permissions. Rebuilding an ad hoc app can cause macOS to ask for permission again.
 
-If you have an installed Apple Development certificate, set it in the Xcode target or pass `SNIP_SIGN_ID='Apple Development: Your Name (TEAMID)' SNIP_TEAM_ID=TEAMID ./scripts/build.sh Debug`. The build script honors the project's signing configuration when these overrides are absent; it no longer forces ad hoc signing over a configured certificate. Keep the bundle identifier and signing identity stable across builds to retain macOS permission grants.
+If you have an installed Apple Development certificate, set it in the Xcode target or pass `SNIP_SIGN_ID='Apple Development: Your Name (TEAMID)' SNIP_TEAM_ID=TEAMID just build`. The build script honors the project's signing configuration when these overrides are absent; it no longer forces ad hoc signing over a configured certificate. Keep the bundle identifier and signing identity stable across builds to retain macOS permission grants.
 
 In an already sandboxed development environment, Swift's compiler macro sandbox may fail to start. For that environment only:
 
 ```sh
-SNIP_EXTRA_SWIFT_FLAGS=-disable-sandbox ./scripts/build.sh Debug
+SNIP_EXTRA_SWIFT_FLAGS=-disable-sandbox just build
 ```
 
 ## Capture
@@ -53,7 +53,7 @@ Recordings are streamed into a hidden `.snip-<UUID>` working directory inside th
 ## Tests
 
 ```sh
-./scripts/test.sh
+just test
 ```
 
 Swift Testing covers capture state transitions, cancellation, multi-display geometry, filename collisions, timestamp normalization, mixed audio from different sample rates, audio-only output, and static-video duration. The media tests encode and decode actual files generated from synthetic samples; they need no screen or microphone permission. Tests compile the shared media/model sources as the `SnipCore` Swift package. The Xcode app compiles the same sources directly.
@@ -62,11 +62,26 @@ Debug builds also support off-screen layout checks: `Snip.app/Contents/MacOS/Sni
 
 See [the manual verification checklist](docs/verification.md) for permissions, real devices, and release checks.
 
+## Code quality and CI
+
+The `justfile` is the shared entry point for local development and GitHub Actions. Run `just` to list recipes. The existing scripts remain available for direct use.
+
+```sh
+brew install just actionlint shellcheck
+just lint
+just ci
+```
+
+`just lint` checks GitHub Actions with actionlint, shell scripts with ShellCheck and Bash's parser, plist/project/scheme syntax, justfile formatting, and whitespace errors. `just build` and `just test` treat Swift compiler warnings as errors; test arguments are forwarded, for example `just test --filter region`.
+
+`just ci` runs linting, all unit and synthetic-media tests, a Debug build, and a universal Release build. It verifies app signatures and Release architectures, creates a local DMG, verifies the disk image, and writes a SHA-256 checksum. These checks require macOS and Xcode; media tests and packaging also need access to native codec and disk-image services. In a managed compiler sandbox, use `SNIP_EXTRA_SWIFT_FLAGS=-disable-sandbox just ci` and allow those native services.
+
+The [CI workflow](.github/workflows/ci.yml) runs on pull requests, pushes to `master`, and manual dispatch. It uses Intel/macOS 15 with Xcode 16.4 and Apple silicon/macOS 26 with Xcode 26.6. Successful runs retain local DMGs and checksums for seven days. They are ad hoc signed development artifacts, not notarized releases. Actions are pinned to commit SHAs, and [Dependabot](.github/dependabot.yml) proposes grouped weekly updates. No signing secrets are needed.
+
 ## Package a local build
 
 ```sh
-./scripts/build.sh Release
-./scripts/package.sh
+just package
 ```
 
 This produces a universal Apple silicon/Intel app and `dist/Snip-0.1.0-local.dmg`, containing Snip and an Applications shortcut. The local DMG is **not notarized**. It is intended for development, not public distribution.
@@ -86,7 +101,7 @@ export SNIP_BUNDLE_ID=com.yourcompany.snip
 export SNIP_TEAM_ID=YOURTEAMID
 export SNIP_SIGN_ID='Developer ID Application: Your Name (YOURTEAMID)'
 export SNIP_NOTARY_PROFILE=SnipNotary
-./scripts/release.sh
+just release
 ```
 
 The script archives a universal app with Hardened Runtime, verifies the signature, submits the app to Apple's notarization service, staples its ticket, builds and signs the DMG, notarizes/staples the DMG, verifies Gatekeeper acceptance, and writes a SHA-256 checksum. It stops on failures and never silently substitutes an unsigned release. A successful release is `dist/Snip-0.1.0.dmg`. Hosting and automatic updates are outside v1.

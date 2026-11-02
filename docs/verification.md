@@ -1,6 +1,6 @@
 # Manual verification
 
-Run on macOS 15 and the current macOS before a public release, including an Intel Mac if distributing the universal build. Automated media tests cannot verify system privacy prompts, picker behavior, or hardware clock stability.
+Run on Apple silicon Macs with macOS 15 and the current macOS before a public release. Automated media tests cannot verify system privacy prompts, picker behavior, or hardware clock stability.
 
 ## Screen capture
 
@@ -37,7 +37,7 @@ Run on macOS 15 and the current macOS before a public release, including an Inte
 
 ## Distribution
 
-- Run `just ci` for linting, tests, Debug and universal Release builds, signature/architecture checks, and DMG validation. Use `just package` to repeat only the Release build and packaging checks.
+- Run `just ci` for linting, tests, Apple silicon Debug and Release builds, signature/architecture checks, and DMG validation. Use `just package` to repeat only the Release build and packaging checks.
 - Mount the local DMG; verify the app and Applications shortcut. Copy the app to a stable test location and launch it.
 - With Developer ID credentials available, run `just release` and retain notarization logs with the release.
 - On a clean Mac, download the final notarized DMG, mount it, install, and launch without bypassing Gatekeeper. Check stapled tickets with the network disconnected.

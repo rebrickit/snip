@@ -14,7 +14,7 @@ SNIP_APP="$SNIP_ARCHIVE/Products/Applications/Snip.app"
 mkdir -p "$SNIP_ROOT/dist"
 xcodebuild -project "$SNIP_ROOT/Snip.xcodeproj" -scheme Snip -configuration Release \
     -destination 'generic/platform=macOS' -derivedDataPath "$SNIP_ROOT/build/ReleaseDerivedData" \
-    -archivePath "$SNIP_ARCHIVE" 'ARCHS=arm64 x86_64' ONLY_ACTIVE_ARCH=NO \
+    -archivePath "$SNIP_ARCHIVE" ARCHS=arm64 ONLY_ACTIVE_ARCH=NO \
     "PRODUCT_BUNDLE_IDENTIFIER=$SNIP_BUNDLE_ID" "DEVELOPMENT_TEAM=$SNIP_TEAM_ID" \
     "CODE_SIGN_IDENTITY=$SNIP_SIGN_ID" OTHER_CODE_SIGN_FLAGS=--timestamp \
     "OTHER_SWIFT_FLAGS=${SNIP_EXTRA_SWIFT_FLAGS:-}" \

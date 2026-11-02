@@ -26,14 +26,13 @@ lint:
     xmllint --noout Snip.xcodeproj/xcshareddata/xcschemes/Snip.xcscheme
     git diff --check
 
-# Verify an existing app's signature and metadata, plus both Release architectures.
+# Verify an existing app's signature, metadata, and Apple silicon architecture.
 verify-app configuration="Release":
     codesign --verify --deep --strict "build/DerivedData/Build/Products/$1/Snip.app"
     plutil -lint "build/DerivedData/Build/Products/$1/Snip.app/Contents/Info.plist"
-    # Check separately: Xcode 27's lipo rejects multiple -verify_arch arguments.
-    if [[ "$1" == Release ]]; then for arch in arm64 x86_64; do lipo "{{ release_app }}/Contents/MacOS/Snip" -verify_arch "$arch"; done; fi
+    test "$(lipo -archs "build/DerivedData/Build/Products/$1/Snip.app/Contents/MacOS/Snip")" = arm64
 
-# Build and verify the universal app, then create and validate a local DMG.
+# Build and verify the Apple silicon app, then create and validate a local DMG.
 package: (build "Release") (verify-app "Release")
     ./scripts/package.sh "{{ release_app }}" "dist/{{ local_dmg }}"
     hdiutil verify "dist/{{ local_dmg }}"

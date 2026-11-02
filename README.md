@@ -1,6 +1,6 @@
 # Snip
 
-A native macOS menu bar utility for screenshots, screen recording, and audio recording. Requires **macOS 15 or later**. Built with Swift 6, SwiftUI, AppKit, ScreenCaptureKit, and AVFoundation; no third-party dependencies, accounts, uploads, or analytics.
+A native macOS menu bar utility for screenshots, screen recording, and audio recording. Requires **Apple silicon and macOS 15 or later**. Built with Swift 6, SwiftUI, AppKit, ScreenCaptureKit, and AVFoundation; no third-party dependencies, accounts, uploads, or analytics.
 
 ## Build and run
 
@@ -74,9 +74,9 @@ just ci
 
 `just lint` checks GitHub Actions with actionlint, shell scripts with ShellCheck and Bash's parser, plist/project/scheme syntax, justfile formatting, and whitespace errors. `just build` and `just test` treat Swift compiler warnings as errors; test arguments are forwarded, for example `just test --filter region`.
 
-`just ci` runs linting, all unit and synthetic-media tests, a Debug build, and a universal Release build. It verifies app signatures and Release architectures, creates a local DMG, verifies the disk image, and writes a SHA-256 checksum. These checks require macOS and Xcode; media tests and packaging also need access to native codec and disk-image services. In a managed compiler sandbox, use `SNIP_EXTRA_SWIFT_FLAGS=-disable-sandbox just ci` and allow those native services.
+`just ci` runs linting, all unit and synthetic-media tests, and Apple silicon Debug and Release builds. It verifies app signatures and that each binary contains only `arm64`, creates a local DMG, verifies the disk image, and writes a SHA-256 checksum. These checks require an Apple silicon Mac and Xcode; media tests and packaging also need access to native codec and disk-image services. In a managed compiler sandbox, use `SNIP_EXTRA_SWIFT_FLAGS=-disable-sandbox just ci` and allow those native services.
 
-The [CI workflow](.github/workflows/ci.yml) runs on pull requests, pushes to `master`, and manual dispatch. It uses Intel/macOS 15 with Xcode 16.4 and Apple silicon/macOS 26 with Xcode 26.6. Successful runs retain local DMGs and checksums for seven days. They are ad hoc signed development artifacts, not notarized releases. Actions are pinned to commit SHAs, and [Dependabot](.github/dependabot.yml) proposes grouped weekly updates. No signing secrets are needed.
+The [CI workflow](.github/workflows/ci.yml) runs on pull requests, pushes to `master`, and manual dispatch. It uses Apple silicon runners on macOS 15 with Xcode 16.4 and macOS 26 with Xcode 26.6. Successful runs retain local DMGs and checksums for seven days. They are ad hoc signed development artifacts, not notarized releases. Actions are pinned to commit SHAs, and [Dependabot](.github/dependabot.yml) proposes grouped weekly updates. No signing secrets are needed.
 
 ## Package a local build
 
@@ -84,7 +84,7 @@ The [CI workflow](.github/workflows/ci.yml) runs on pull requests, pushes to `ma
 just package
 ```
 
-This produces a universal Apple silicon/Intel app and `dist/Snip-0.1.0-local.dmg`, containing Snip and an Applications shortcut. The local DMG is **not notarized**. It is intended for development, not public distribution.
+This produces an Apple silicon (`arm64`) app and `dist/Snip-0.1.0-local.dmg`, containing Snip and an Applications shortcut. The local DMG is **not notarized**. It is intended for development, not public distribution.
 
 ## Sign and notarize for distribution
 
@@ -104,7 +104,7 @@ export SNIP_NOTARY_PROFILE=SnipNotary
 just release
 ```
 
-The script archives a universal app with Hardened Runtime, verifies the signature, submits the app to Apple's notarization service, staples its ticket, builds and signs the DMG, notarizes/staples the DMG, verifies Gatekeeper acceptance, and writes a SHA-256 checksum. It stops on failures and never silently substitutes an unsigned release. A successful release is `dist/Snip-0.1.0.dmg`. Hosting and automatic updates are outside v1.
+The script archives an Apple silicon app with Hardened Runtime, verifies the signature, submits the app to Apple's notarization service, staples its ticket, builds and signs the DMG, notarizes/staples the DMG, verifies Gatekeeper acceptance, and writes a SHA-256 checksum. It stops on failures and never silently substitutes an unsigned release. A successful release is `dist/Snip-0.1.0.dmg`. Hosting and automatic updates are outside v1.
 
 The only Hardened Runtime exception is microphone input. App Sandbox is disabled for this direct-distribution build. Set a permanent bundle identifier before releasing; changing it changes the app's macOS privacy identity.
 

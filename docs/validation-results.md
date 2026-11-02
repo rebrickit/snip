@@ -1,5 +1,7 @@
 # Validation — 2026-11-02
 
+Historical validation of the original universal build. Current builds and CI target Apple silicon only.
+
 Environment: Apple silicon Mac, macOS 27.0.1, Xcode 27.0, Swift 6.4. Deployment target: macOS 15.0.
 
 - **Passed:** 22 Swift Testing tests, including permission routing and recovery classification, all eight region resize handles, region movement and boundary clamping, edited-region capture coordinates, real H.264/AAC encoding and decoding, two-source audio mixing at 44.1/48 kHz, a microphone starting 100 ms late, static-video duration, empty/repeated finalization, capture state transitions, multi-display coordinates, and collision-safe filenames.
